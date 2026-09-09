@@ -1,0 +1,118 @@
+dataset:
+  name: eurlex57k
+  num_labels: 4271
+  num_seen_labels: 4108
+  num_unseen_labels: 163
+  data_mode: in_memory
+  require_dev_no_unseen: false
+  label_text_fields:
+  - eurovoc_title
+  - title
+  - label
+  - content
+paths:
+  train: data/EURLEX57K/trn.json
+  dev: data/EURLEX57K/dev.json
+  labels: data/EURLEX57K/lbl.json
+  label_embeddings: data/EURLEX57K/lbl_embs_sfr_eurlex57k.npy
+  synthetic: data/EURLEX57K/synthetic_unseen.json
+  test: data/EURLEX57K/tst.json
+model:
+  document_encoder: distilbert-base-uncased
+  label_embedding_source: precomputed:SFR-Embedding-2
+  label_embedding_dimension: 4096
+  max_document_length: 512
+  dropout: 0.1
+  gradient_checkpointing: true
+seen_training:
+  batch_size: 16
+  dev_batch_size: 4
+  epochs: 70
+  learning_rate: 5.0e-06
+  weight_decay: 0.01
+  max_pos_weight: 100.0
+  gradient_clip_norm: 1.0
+  label_chunk_size: null
+  eval_label_chunk_size: 256
+  dev_monitor_documents: null
+  scheduler: linear
+  warmup_steps: 0
+  num_workers: 0
+  seed: 42
+  use_amp: true
+  skip_nonfinite_gradients: false
+  print_every_batches: 100
+  resume_checkpoint: data/hf_EURLEX57K/orig_oflan_seen_v3.pt
+  resume_epoch: 50
+  resume_if_available: true
+outputs:
+  seen_checkpoint: data/EURLEX57K/model/base_seen.pt
+  seen_training_state: data/EURLEX57K/model/base_seen_training_state.pt
+  seen_history: data/EURLEX57K/training_metrics/seen_history.json
+  unseen_checkpoint: data/EURLEX57K/model/base_seen_plus_unseen.pt
+  unseen_history: data/EURLEX57K/training_metrics/unseen_history.json
+  evaluation_results: data/EURLEX57K/eval/evaluation_results.json
+unseen_training:
+  batch_size: 2
+  val_batch_size: 4
+  epochs: 30
+  learning_rate: 2.0e-05
+  weight_decay: 0.01
+  max_pos_weight: 100.0
+  gradient_clip_norm: 1.0
+  adapter_hidden_size: 256
+  adapter_dropout: 0.1
+  examples_per_label: 10
+  synthetic_train_per_label: 8
+  synthetic_val_per_label: 2
+  validation: synthetic
+  num_workers: 0
+  seed: 42
+  use_amp: true
+  skip_nonfinite_gradients: false
+  print_every_steps: 50
+evaluation:
+  batch_size: 4
+  label_chunk_size: 256
+  ranking_k:
+  - 1
+  - 3
+  - 5
+  - 10
+  - 25
+  zsr_k:
+  - 1
+  - 3
+  - 5
+  - 10
+  - 25
+  - 50
+  - 100
+  num_workers: 0
+  seed: 42
+  use_amp: true
+  allow_tf32: false
+  print_every_batches: 100
+  max_test_documents: null
+  psp:
+    enabled: true
+    a: 0.55
+    b: 1.5
+  classification:
+    enabled: true
+    threshold_mode: fixed
+    seen_threshold: 0.95
+    unseen_threshold: 0.95
+generation:
+  generator_model: Qwen/Qwen3-4B-Instruct-2507
+  examples_per_label: 10
+  neighbours_per_label: 50
+  demonstrations_per_generation: 5
+  max_generation_attempts: 3
+  max_demonstration_chars: 1800
+  max_new_tokens: 1800
+  temperature: 0.7
+  top_p: 0.9
+  repetition_penalty: 1.05
+  seed: 42
+  document_type: legal document

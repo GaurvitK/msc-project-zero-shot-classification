@@ -1,0 +1,13 @@
+amazoncat_sampling:
+  source_dir: data/AmazonCat-13K
+  output_dir: data/AmazonCat-13K_sub
+
+  train_file: trn.json
+  dev_file: dev.json
+  test_file: tst.json
+  label_file: lbl.json
+
+  num_seen_labels: 5000
+  num_unseen_labels: 753
+  train_documents: 300000
+  seed: 42
